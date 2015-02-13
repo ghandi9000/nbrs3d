@@ -3,21 +3,95 @@
 ## Description: Visualize sample neighborhood
 ## Author: Noah Peart
 ## Created: Wed Feb 11 16:45:43 2015 (-0500)
-## Last-Updated: Wed Feb 11 17:57:51 2015 (-0500)
+## Last-Updated: Thu Feb 12 19:35:26 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
 source("~/work/neighborhoods/surround/rewrite/create_test.R")
 
-## 3d visualization of plot
+## Using uniform x,y
+ps <- as.matrix(expand.grid(x = -1.5:1.5, y = -1.5:1.5, z = 0, h = 1))
+theta_s <- 20
+theta_a <- 225
+ps[,3] <- zvals(ps, theta_a, theta_s, offset)
+ps <- data.frame(ps)
+ps$dbh <- runif(nrow(ps), 5, 15)
+ps$shape <- sample(c("cone", "ellipse"), nrow(ps), replace=T)
+ps$ht <- runif(nrow(ps), 2, 15)
+ps$crdepth <- runif(1, 0.3, 0.95) * (ps$ht)
+ps$crarea <- pi*(ps$crdepth/2)^2 + runif(1)
+    
+## library(plotrix)
+## poles <- cart2pol(ps[,1], ps[,2])
+## par(mfrow = c(1,2))
+## polar.plot(poles[,1], poles[,2] * 180/pi, main = "x-y distance")
+## polar.plot(ps[3,] + max(ps[,3]), poles[,2] * 180/pi, main = "z-values")
+
+## Test on plot 22, aspect of 270 (directly west)
+dat <- read.csv("~/work/data/moose/moose-wide.csv")
+tst <- dat[dat$pplot == 22, ]  # plot 22
+tst <- tst[complete.cases(tst[,c("x","y")]), ]
+theta_a <- unique(tst$asp)
+theta_s <- unique(tst$slope)
+poles <- cart2pol(x = tst$x, y = tst$y)
+par(mfrow = c(1,2))
+polar.plot(poles[,1], poles[,2] * 180/pi, main = "x-y distance")
+polar.plot(tst$z, poles[,2] * 180/pi, main = "z-values")
+
 library(rgl)
-plot3d(nbrs$x, nbrs$y, nbrs$z, type="s", col=as.numeric(nbrs$spec))
+ellipse <- function(a, b, c, center, crwn_col = "darkgreen", crwn_trans = 0.8, ...) {
+    mat <- (1/16) * diag(3)
+    plot3d(ellipse3d(mat, level = 0.999, centre = center, scale = c(a,b,c), col = crwn_col,
+                     alpha = crwn_trans), add = T, ...)
+}
 
-open3d()
-layout3d(matrix(1:16, 4,4), heights = c(1,3,1,3))
-text3d(0,0,0,"tetrahedron3d"); next3d()
+cylinder <- function(center, radius, height, ...) {
+    def <- 10  # definition of rendering
+    center <- cbind(center[1], center[2], c(center[3], center[3] + height))
+    e2 <- cbind(1, 0, 0)
+    cyl <- cylinder3d(center, sides = 8, radius = radius, e2=e2, ...)
+    shade3d(cyl, col = "brown", alpha = 0.8, add = T,)
+}
 
+p3d <- function(plt) {
+    ## Make 3D plot
+    require(rgl)
+    x <- plt[["x"]]
+    y <- plt[["y"]]
+    z <- plt[["z"]]
+    t_rad <- sqrt(plt[["dbh"]]/pi/100)  # trunk radius
+    tree_ht <- plt[["ht"]]  # height to top of tree
+    cr_ht <- tree_ht - plt[["crdepth"]]  # height to base of crown
+    crdepth <- plt[["crdepth"]]  # crown depth
+    cr_rad <- sqrt(plt[["crarea"]]/pi)  # horiz. crown radius
+    
+    plot3d(x, y, z+tree_ht, type="n", box = F, xlab="", ylab = "", zlab = "")
+    for (i in 1:nrow(plt)) {
+        center <- c(x[i], y[i], z[i])
+        cylinder(center, t_rad[i], cr_ht[i])  # draw trunk
+        ellipse(cr_rad[i], cr_rad[i], crdepth[i]/2, center + c(0,0,tree_ht[i]-crdepth[i]/2))
+    }
+    planes3d(c(0,0,1), col = "lightgray", alpha = 0.5)  # plane through center of plot
+    grid3d(side = "z")                              # grid on base
+    ## Compass for orientation
+    abclines3d(0, 0, min(z)+.01, a = matrix(c(1,-1,0,-1,-1,0,0,0,0), 3, 3), col = "lightblue", lwd=4)
+    text3d(max(x)-0.1, c(min(y)+0.1, max(y)-0.1), min(z)+0.1,
+           texts = c("North", "East"))
+    title3d(main = "Sample Plot", xlab = "X", ylab = "Y", zlab = "Z", nticks = 10)
 
-library(plotrix)
-coords <- cart2pol(nbrs$x, nbrs$y)
-polar.plot(nbrs$z, coords[,2] * 180/pi, start = -45)
+}
+
+tst <- matrix(c(1,0,0,0,0.5,0,0,0,0.5),3,3)
+ell <- ellipse3d(tst, centre = c(1,1,1))
+shade3d(ell, col = "green")
+decorate3d()
+
+ellipsoid <- function(baseX, baseY, baseZ, cd, th, ch, c.color, c.transparency) {
+                                        # the ellipsoid size is not exact, just approximate
+    x<-(1/16)*((cd/2)^2)
+    y<-(1/16)*((cd/2)^2)
+    z<-(1/16)*((ch/2)^2)
+    matrix.a<- matrix(c(x,0,0,0,y,0,0,0,z), 3,3)
+    plot3d(ellipse3d(matrix.a, level=0.999, centre = c(baseX, baseY, baseZ+th+ch/2)), col=c.color, alpha= c.transparency, add=T)
+}
+
