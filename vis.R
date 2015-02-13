@@ -3,7 +3,7 @@
 ## Description: Visualize sample neighborhood
 ## Author: Noah Peart
 ## Created: Wed Feb 11 16:45:43 2015 (-0500)
-## Last-Updated: Fri Feb 13 15:59:14 2015 (-0500)
+## Last-Updated: Fri Feb 13 16:03:45 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -93,13 +93,4 @@ tst <- matrix(c(1,0,0,0,0.5,0,0,0,0.5),3,3)
 ell <- ellipse3d(tst, centre = c(1,1,1))
 shade3d(ell, col = "green")
 decorate3d()
-
-ellipsoid <- function(baseX, baseY, baseZ, cd, th, ch, c.color, c.transparency) {
-                                        # the ellipsoid size is not exact, just approximate
-    x<-(1/16)*((cd/2)^2)
-    y<-(1/16)*((cd/2)^2)
-    z<-(1/16)*((ch/2)^2)
-    matrix.a<- matrix(c(x,0,0,0,y,0,0,0,z), 3,3)
-    plot3d(ellipse3d(matrix.a, level=0.999, centre = c(baseX, baseY, baseZ+th+ch/2)), col=c.color, alpha= c.transparency, add=T)
-}
 
