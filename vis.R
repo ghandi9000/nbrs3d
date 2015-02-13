@@ -3,7 +3,7 @@
 ## Description: Visualize sample neighborhood
 ## Author: Noah Peart
 ## Created: Wed Feb 11 16:45:43 2015 (-0500)
-## Last-Updated: Thu Feb 12 19:35:26 2015 (-0500)
+## Last-Updated: Fri Feb 13 15:59:14 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -11,10 +11,18 @@ source("~/work/neighborhoods/surround/rewrite/create_test.R")
 
 ## Using uniform x,y
 ps <- as.matrix(expand.grid(x = -1.5:1.5, y = -1.5:1.5, z = 0, h = 1))
-theta_s <- 20
-theta_a <- 225
-ps[,3] <- zvals(ps, theta_a, theta_s, offset)
+theta_s <- 45
+theta_a <- 135
+ps[,3] <- zvals(ps, theta_a, theta_s)
 ps <- data.frame(ps)
+plot3d(xyz.coords(ps), type = "s")
+grid3d(side = "z")
+planes3d(c(0,0,1), col="light green", alpha = 0.3)
+abclines3d(0, a = diag(3))
+m <- matrix(c(cos(theta_a * pi/180 - pi/4), sin(theta_a * pi/180 - pi/4),
+              tan(theta_s * pi/180)), ncol = 3)
+abclines3d(0, a = m, col = "red", lwd = 4)
+
 ps$dbh <- runif(nrow(ps), 5, 15)
 ps$shape <- sample(c("cone", "ellipse"), nrow(ps), replace=T)
 ps$ht <- runif(nrow(ps), 2, 15)
