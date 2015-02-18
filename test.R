@@ -3,52 +3,61 @@
 ## Description: 
 ## Author: Noah Peart
 ## Created: Mon Feb 16 20:21:32 2015 (-0500)
-## Last-Updated: Tue Feb 17 13:59:40 2015 (-0500)
+## Last-Updated: Wed Feb 18 13:51:08 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
-source("~/work/gis/read-sky.R")
+source("~/work/neighborhoods/surround/rewrite/create_test.R")
+source("~/work/gis/read-sky.R")  # read GIS skyline data
+source("~/work/nbrs3d/vis.R")  # visualization function
 
-dat <- read.csv("~/work/data/moose/moose-long.csv")
-p5 <- dat[dat$pplot == 5 & dat$time == 86 & dat$stat == "ALIVE", ]
-unique(p5$asp)  # 180 aspect
-unique(p5$slope)  # ~ 7 degree slope
+## Using uniform x,y
+ps <- as.matrix(expand.grid(x = -1.5:1.5, y = -1.5:1.5, z = 0, h = 1))
+theta_s <- 45
+theta_a <- 90
+ps[,3] <- zvals(ps, theta_a, theta_s, x_offset = 315)
+ps <- data.frame(ps)
+ps$dbh <- runif(nrow(ps), 5, 15)
+ps$shape <- sample(c("cone", "ellipse"), nrow(ps), replace=T)
+ps$ht <- runif(nrow(ps), 2, 15)
+ps$crdepth <- runif(1, 0.3, 0.95) * (ps$ht)
+ps$crarea <- pi*(ps$crdepth/2)^2 + runif(1)
 
-sky <- skylines[["5"]]
-size <- 50  # dimensions of matrices
-inds <- floor(seq(1, nrow(sky), length =size))
-theta_zen <- sky[inds, "ZENITH_ANG"]*pi/180
-theta_az <- sky[inds, "HORIZ_ANG"]*pi/180
-
-library(rgl)
-
-## coloring sphere
-zen <- matrix(seq(0, pi, length = size), size, size, byrow = TRUE)
-az <- matrix(seq(0, 2*pi, length = size), size, size)
-r <- 1
-z <- r*cos(zen)
-x <- r*sin(zen)*cos(az)
-y <- r*sin(zen)*sin(az)
-
-open3d()
-persp3d(x, y, z, alpha = 0.3)
+plot3d(xyz.coords(ps[,c("x","y","z")]), type = "s")
 grid3d(side = "z")
+planes3d(c(0,0,1), col="light green", alpha = 0.3)
 abclines3d(0, a = diag(3))
-## Horizon line
-r <- 1
-z2 <- r*cos(theta_zen)
-x2 <- r*sin(theta_zen) * cos(theta_az)
-y2 <- r*sin(theta_zen) * sin(theta_az)
-xyz <- cbind(x2, y2, z2)
-lines3d(xyz.coords(x2, y2, z2), lwd = 4, col = "wheat2")
-
 
 library(plotrix)
-r <- 90
-z2 <- r*cos(sky$ZENITH_ANG*pi/180)
-x2 <- r*sin(sky$ZENITH_ANG*pi/180) * cos(sky$HORIZ_ANG*pi/180)
-y2 <- r*sin(sky$ZENITH_ANG*pi/180) * sin(sky$HORIZ_ANG*pi/180)
-xyz <- cbind(x2, y2, z2)
+poles <- cart2pol(ps[,1], ps[,2])
+par(mfrow = c(1,2))
+polar.plot(poles[,1], poles[,2] * 180/pi, main = "x-y distance")
+polar.plot(ps[3,] + max(ps[,3]), poles[,2] * 180/pi, main = "z-values")
 
-polar.plot(sky$ZENITH_ANG, polar.pos = sky$HORIZ_ANG, radial.lim = c(0, 90),
-           rp.type = "l")
-abline(h = 0, v = 0)
+## Test plot
+p <- 5  # plot number
+yr <- 86
+dat <- read.csv("~/work/data/moose/moose-long.csv")
+tst <- dat[dat$pplot == p & dat$time == yr & dat$stat == "ALIVE", ] 
+tst <- tst[complete.cases(tst[,c("x","y","z","dbh","ht","crdepth","crarea")]), ]
+theta_a <- unique(tst$asp)
+theta_s <- unique(tst$slope)
+sky <- skylines[[as.character(p)]]
+
+## Shapes for different species
+soft <- c("ABBA", "PIRU")
+tst$shape <- ifelse(tst$spec %in% soft, "cone", "ellipse")
+
+library(plotrix)
+polar.plot(sky$ZENITH_ANG, sky$HORIZ_ANG, main="Horizontal angle, radius is zenith angle")
+
+poles <- cart2pol(x = tst$x, y = tst$y)
+par(mfrow = c(1,2))
+polar.plot(poles[,1], poles[,2] * 180/pi, main = "x-y distance")
+polar.plot(tst$z, poles[,2] * 180/pi, main = "z-values")
+
+## tst <- matrix(c(1,0,0,0,0.5,0,0,0,0.5),3,3)
+## ell <- ellipse3d(tst, centre = c(1,1,1))
+## shade3d(ell, col = "green")
+## decorate3d()
+
+## writeWebGL()
