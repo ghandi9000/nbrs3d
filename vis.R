@@ -3,7 +3,7 @@
 ## Description: Visualize sample neighborhood
 ## Author: Noah Peart
 ## Created: Wed Feb 11 16:45:43 2015 (-0500)
-## Last-Updated: Mon Feb 16 21:20:43 2015 (-0500)
+## Last-Updated: Wed Feb 18 13:20:41 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -71,8 +71,7 @@ p3d <- function(plt, crwn_col="darkgreen", crwn_wire=TRUE, trnk_col = "brown",
     cr_ht <- tree_ht - plt[["crdepth"]]  # height to base of crown
     crdepth <- plt[["crdepth"]]  # crown depth
     cr_rad <- sqrt(plt[["crarea"]]/pi)  # horiz. crown radius
-    
-#    plot3d(x, y, z+tree_ht, type="n", box = F, xlab="", ylab = "", zlab = "")
+
     for (i in 1:nrow(plt)) {
         center <- c(x[i], y[i], z[i])
         cylinder(center, t_rad[i], cr_ht[i], wire=trnk_wire, col = "brown")  # draw trunk
@@ -101,4 +100,6 @@ p3d <- function(plt, crwn_col="darkgreen", crwn_wire=TRUE, trnk_col = "brown",
 ## ell <- ellipse3d(tst, centre = c(1,1,1))
 ## shade3d(ell, col = "green")
 ## decorate3d()
+
+
 
