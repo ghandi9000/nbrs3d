@@ -3,7 +3,7 @@
 ## Description: Visualize sample neighborhood
 ## Author: Noah Peart
 ## Created: Wed Feb 11 16:45:43 2015 (-0500)
-## Last-Updated: Wed Feb 18 14:20:35 2015 (-0500)
+## Last-Updated: Wed Feb 18 20:09:07 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -52,5 +52,23 @@ p3d <- function(plt, crwn_col="darkgreen", crwn_wire=TRUE, trnk_col = "brown",
     title3d(main = paste("Plot:", tt), xlab = "X", ylab = "Y", zlab = "Z", nticks = 10)
     axes3d()
 ##     play3d(spin3d(), duration = 2.5)
+}
+
+## Add tree crown to 3D plot
+add_tree <- function(tree, wire = FALSE, crwn_col = "darkred", cones = c("ABBA", "PIRU"),
+                     alpha = 0.5, ...) {
+    require(rgl)
+    if (all(sapply(c(tree$x, tree$y, tree$z), is.null)))
+        tree[, c("x", "y", "z")] <- c(0,0,0)  # target centered in plot
+    cr_rad <- sqrt(tree$crarea/pi)
+    if (tree$spec %in% cones)
+        crwn <- with(tree, cone(x, y, z+ht-crdepth, height = crdepth, rad = cr_rad))
+    else
+        crwn <- with(tree, ellipsoid(x, y, z+ht-crdepth/2,
+                                     a=cr_rad, b=cr_rad, c=crdepth/2))
+    if (!wire)
+        shade3d(crwn, col = crwn_col, alpha = alpha, ...)
+    else
+        wire3d(crwn, col = crwn_col, alpha = alpha, ...)
 }
 
