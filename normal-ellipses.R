@@ -3,7 +3,7 @@
 ## Description: Ellipse formed on normal plane to point of view intersection with ellipsoid
 ## Author: Noah Peart
 ## Created: Thu Feb 19 17:51:22 2015 (-0500)
-## Last-Updated: Thu Feb 19 20:20:38 2015 (-0500)
+## Last-Updated: Fri Feb 20 14:26:59 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/nbrs3d/vis.R")  # 3d visualization stuff (p3d, rgl shapes)
@@ -30,11 +30,12 @@ plot3d(0, xlab = "X", ylab = "Y", zlab = "Z",
        xlim = c(-3, 5), ylim = c(-3, 5), zlim = c(-3, 5))
 grid3d(side = c("x-","y+","z-"))
 abclines3d(0, a=diag(3), lwd=2)
-wire3d(ellipsoid(1,1,1,1,1,2), alpha = 0.3, col = "darkgreen")
+wire3d(ellipsoid(1,1,1,1,1,2), alpha = 1, col = "darkred")
 
 ## Add normal line and plane
 lines3d(x=c(0,1), y=c(0,1), z=c(0,1), col = "green", lwd=2)
-planes3d(a=1, b=1, c=1, d = -3, alpha = 0.5)
+planes3d(a=1, b=1, c=1, d = -3, alpha = 0.6)
+
 
 ## Plane parallel to position vector
 open3d()
