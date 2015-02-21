@@ -3,7 +3,7 @@
 ## Description: Ellipse formed on normal plane to point of view intersection with ellipsoid
 ## Author: Noah Peart
 ## Created: Thu Feb 19 17:51:22 2015 (-0500)
-## Last-Updated: Fri Feb 20 21:09:25 2015 (-0500)
+## Last-Updated: Fri Feb 20 23:59:13 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/nbrs3d/vis.R")  # 3d visualization stuff (p3d, rgl shapes)
@@ -83,7 +83,7 @@ arrows(x0=psh[1,1], y0=psh[1,2], x1=pt3[1,1], y1=pt3[1,2], col = "orange")
 ##
 ################################################################################
 ## Translated rotated ellipse
-a <- 2
+a <- 3
 b <- 1
 theta <- 0  # rotation from +x axis
 xc <- 3  # center of ellipse
@@ -126,6 +126,13 @@ ell_tang2d <- function(a, b, xc, yc, theta) {
 ## Oblate ellipsoid centered (1, 1, 1), point of view from origin
 ## normal plane is simply <1,1,1>
 ## axes: a = b = 1, c = 2
+a <- 3
+b <- 1
+c <- 2
+xc <- 1
+yc <- 2
+zc <- 1
+
 open3d()
 plot3d(0, xlab = "X", ylab = "Y", zlab = "Z",
        xlim = c(-3, 5), ylim = c(-3, 5), zlim = c(-3, 5))
@@ -146,6 +153,30 @@ grid3d(side = c("x-","y+","z-"))
 abclines3d(0, a=diag(3), lwd=2)
 wire3d(ellipsoid(1,2,1,1,1,2), alpha = 0.3, col = "darkgreen")
 
-## Add normal line and plane
+## Add normal line and parallel plane
 lines3d(x=c(0,1), y=c(0,2), z=c(0,1), col = "green", lwd=2)
 planes3d(a=-2, b=1, c=0, alpha = 0.5)
+
+planes3d()
+
+## Tangent Points
+a <- 3
+b <- 1
+theta <- 0  # rotation from +x axis
+xc <- 3  # center of ellipse
+yc <- 0
+len = 500
+
+ps <- cbind(xs=a*cos(seq(0, 2*pi, length=len)), ys=b*sin(seq(0, 2*pi, length=len)))
+rmat <- matrix(c(cos(theta), sin(theta), -sin(theta), cos(theta)), 2, 2)
+ps <- t( rmat %*% t(ps) ) + matrix(c(xc, yc), len, 2, byrow = TRUE)
+plot(xy.coords(ps), type = "l", main="2D ellipse tangents", xlab = "x", ylab = "y",
+     ylim = c(min(0, min(ps[,2])), max(1, ps[,2])),
+     xlim = c(min(0, min(ps[,1])), max(1, ps[,1])))
+abline(h=0, v=0)
+grid()
+
+ms <- ell_tang2d(a, b, xc, yc, theta)  # tangent slopes
+abline(0, ms[1], lty=2, col = "red")
+abline(0, b=ms[2], lty=2, col = "red")
+
